@@ -5,55 +5,70 @@ Cada categoría tiene:
 - name: identificador interno (snake_case)
 - label: nombre legible para mostrar al usuario
 - description: texto que la IA usa para entender el significado de la categoría
-
-TAREA: Definí al menos 6 categorías relevantes para el dataset de preguntas.
-       Pensá en categorías que sean mutuamente excluyentes y que cubran
-       la mayor cantidad posible de preguntas.
-
-Ejemplo de estructura:
-
-CATEGORIES = [
-    {
-        "name": "machine_learning",
-        "label": "Machine Learning",
-        "description": "Preguntas sobre algoritmos de aprendizaje automático, redes neuronales, overfitting, gradient descent, etc."
-    },
-    {
-        "name": "historia",
-        "label": "Historia",
-        "description": "Preguntas sobre eventos históricos, personajes, guerras, civilizaciones, etc."
-    },
-    # ... más categorías
-]
 """
 
-# TODO: Implementar la lista CATEGORIES con al menos 6 categorías.
-#       Cada categoría debe ser un diccionario con las claves: "name", "label", "description".
-#       Las descripciones deben ser claras y detalladas para que la IA pueda usarlas
-#       como referencia al momento de clasificar.
-
-CATEGORIES: list[dict[str, str]] = []
+CATEGORIES: list[dict[str, str]] = [
+    {
+        "name": "history",
+        "label": "Historia",
+        "description": "Preguntas sobre eventos históricos, guerras, tratados, imperios, civilizaciones antiguas y personajes del pasado.",
+    },
+    {
+        "name": "geography",
+        "label": "Geografía",
+        "description": "Preguntas sobre países, capitales, ciudades, continentes, mapas, océanos, ríos, montañas y fronteras.",
+    },
+    {
+        "name": "science_and_nature",
+        "label": "Ciencia y Naturaleza",
+        "description": "Preguntas sobre física, química, biología, medicina, astronomía, el universo, plantas, animales y fenómenos naturales.",
+    },
+    {
+        "name": "technology",
+        "label": "",
+        "description": "Preguntas sobre informática, computadoras, internet, software, hardware, inteligencia artificial y programación.",
+    },
+    {
+        "name": "sports",
+        "label": "Deportes",
+        "description": "Preguntas sobre disciplinas deportivas, atletas, equipos, torneos, copas mundiales, juegos olímpicos y récords.",
+    },
+    {
+        "name": "entertainment_and_cinema",
+        "label": "Cine y Entretenimiento",
+        "description": "Preguntas sobre películas, series de televisión, actores, directores de cine, cultura pop y teatro.",
+    },
+    {
+        "name": "music",
+        "label": "Música",
+        "description": "Preguntas sobre canciones, cantantes, bandas, álbumes musicales, instrumentos, géneros y conciertos.",
+    },
+    {
+        "name": "literature_and_art",
+        "label": "Literatura y Arte",
+        "description": "Preguntas sobre libros, autores, novelas, poesía, mitología, pintura, escultura, museos y artistas plásticos.",
+    },
+]
 
 
 def get_category_names() -> list[str]:
     """Retorna una lista con los nombres (name) de todas las categorías."""
-    # TODO: Implementar. Debe retornar algo como ["machine_learning", "historia", ...]
-    pass
+    return [cat["name"] for cat in CATEGORIES]
 
 
 def get_category_labels() -> list[str]:
     """Retorna una lista con los labels legibles de todas las categorías."""
-    # TODO: Implementar.
-    pass
+    return [cat["label"] for cat in CATEGORIES]
 
 
 def get_category_descriptions() -> list[str]:
     """Retorna una lista con las descripciones de todas las categorías."""
-    # TODO: Implementar.
-    pass
+    return [cat["description"] for cat in CATEGORIES]
 
 
 def find_category_by_name(name: str) -> dict | None:
     """Busca y retorna una categoría por su nombre. Retorna None si no existe."""
-    # TODO: Implementar.
-    pass
+    for cat in CATEGORIES:
+        if cat["name"] == name:
+            return cat
+    return None

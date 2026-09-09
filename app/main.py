@@ -5,6 +5,9 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.database import get_db, engine
 from app.models import Base, Question
+from app.categories import CATEGORIES
+from app.database import get_db, engine
+from app.models import Categorization
 
 app = FastAPI(title="Questions API", version="1.0.0")
 
@@ -91,61 +94,50 @@ def create_question(payload: QuestionCreate, db: Session = Depends(get_db)):
 def list_by_category(category_name: str, skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     """
     Retorna las preguntas que fueron categorizadas con una categoría específica.
-
-    TAREA:
-    - Hacer un JOIN entre Question y Categorization
-    - Filtrar por Categorization.category_name == category_name
-    - Aplicar skip y limit
-    - Retornar las preguntas con su información de categorización
-
-    TODO: Implementar la query con JOIN.
     """
-    # TODO: Implementar
-    pass
+    questions = (
+        db.query(Question)
+        .join(Categorization, Question.id == Categorization.question_id)
+        .filter(Categorization.category_name == category_name)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+    return questions
 
 
 @app.get("/categories")
 def list_categories():
     """
     Retorna la lista de categorías disponibles.
-
-    TAREA:
-    - Importar CATEGORIES desde app/categories.py
-    - Retornar la lista completa
-
-    TODO: Implementar.
     """
-    # TODO: Implementar
-    pass
+    return CATEGORIES
 
 
 @app.get("/categories/stats")
 def category_stats(db: Session = Depends(get_db)):
     """
     Retorna estadísticas de categorización.
-
-    Debe retornar un JSON como:
-    {
-        "total_questions": 1000,
-        "categorized": 850,
-        "uncategorized": 150,
-        "automatic": 700,
-        "manual": 150,
-        "by_category": {
-            "machine_learning": 200,
-            "historia": 150,
-            ...
-        }
-    }
-
-    TAREA:
-    - Contar el total de preguntas
-    - Contar las categorizadas (que tienen entrada en categorizations)
-    - Contar automáticas vs manuales
-    - Agrupar por categoría (GROUP BY)
-
-    TODO: Implementar las queries necesarias.
-    Pista: usá db.query(func.count(...)).group_by(...)
     """
-    # TODO: Implementar
-    pass
+    total_questions = db.query(Question).count()
+    categorized = db.query(Categorization).count()
+    uncategorized = max(0, total_questions - categorized)
+    automatic = db.query(Categorization).filter(Categorization.is_automatic == True).count()
+    manual = db.query(Categorization).filter(Categorization.is_automatic == False).count()
+
+    # Agrupación por categoría
+    by_category_tuples = (
+        db.query(Categorization.category_name, func.count(Categorization.id))
+        .group_by(Categorization.category_name)
+        .all()
+    )
+    by_category = {cat: count for cat, count in by_category_tuples if cat}
+
+    return {
+        "total_questions": total_questions,
+        "categorized": categorized,
+        "uncategorized": uncategorized,
+        "automatic": automatic,
+        "manual": manual,
+        "by_category": by_category
+    }
