@@ -5,7 +5,7 @@ from tqdm import tqdm
 from sqlalchemy import select
 from app.database import SessionLocal
 from app.models import Question, Categorization
-from app.categories import CATEGORIES, get_category_names
+from app.categories import CATEGORIES, get_category_names, get_category_labels_en
 from app.classifier import AIClassifier
 from app.human_review import (
     display_question_context,
@@ -13,7 +13,7 @@ from app.human_review import (
     ask_human_for_category,
 )
 
-CONFIDENCE_THRESHOLD = 0.70
+CONFIDENCE_THRESHOLD = 0.30
 
 
 def get_uncategorized_questions(db) -> list:
@@ -48,6 +48,16 @@ def categorize_all(batch_size: int = 32, threshold: float = CONFIDENCE_THRESHOLD
     try:
         classifier = AIClassifier()
         category_names = get_category_names()
+        category_labels_en = get_category_labels_en()
+
+        # Le pasamos al modelo etiquetas cortas EN INGLÉS (ej. "geography",
+        # "science and technology"), no la descripción completa: el pipeline
+        # arma la hipótesis "This example is about {label}." y necesita una
+        # palabra/frase corta y coherente ahí, no un párrafo entero.
+        # Después traducimos el resultado de vuelta al "name" interno en
+        # español (ej. "geografia") con este mapeo.
+        label_en_to_name = dict(zip(category_labels_en, category_names))
+
         questions = get_uncategorized_questions(db)
 
         print("\n" + "=" * 50)
@@ -67,7 +77,11 @@ def categorize_all(batch_size: int = 32, threshold: float = CONFIDENCE_THRESHOLD
         skipped_count = 0
 
         for q in tqdm(questions, desc="Categorizando"):
-            result = classifier.classify(q.question, category_names)
+            result = classifier.classify(
+                q.question,
+                category_labels_en,
+                label_map=label_en_to_name,
+            )
 
             if result.confidence_score >= threshold:
                 save_categorization(
